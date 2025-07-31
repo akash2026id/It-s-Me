@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Abuhurira With Blackjin Akash</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tiro Bangla', serif;
+        }
+        
+        body {
+            background-color: #121212;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        
+        .profile-name {
+            margin-top: 15px;
+			color: #00ff00;
+            font-size: 22px;
+            text-align: center;
+        }
+        
+        .profile-name span {
+            color: pink;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            color: #000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-facebook {
+            background-color: #1877f2;
+            color: white;
+        }
+        
+        .btn-facebook:hover {
+            background-color: #166fe5;
+            box-shadow: 0 6px 10px rgba(24, 119, 242, 0.4);
+        }
+        
+        .btn-youtube {
+            background-color: #ff0000;
+            color: white;
+        }
+        
+        .btn-youtube:hover {
+            background-color: #e60000;
+            box-shadow: 0 6px 10px rgba(255, 0, 0, 0.4);
+        }
+        
+        .btn-tiktok {
+            background-color: #000000;
+            color: white;
+        }
+        
+        .btn-tiktok:hover {
+            background-color: #333333;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn-website {
+            background-color: #9400d3;
+            color: white;
+        }
+        
+        .btn-website:hover {
+            background-color: #8a00c2;
+            box-shadow: 0 6px 10px rgba(148, 0, 211, 0.4);
+        }
+        
+        .help-box {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .help-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #00ff00;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: white;
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background-color: #00aa00;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            background-color: #008800;
+            box-shadow: 0 4px 8px rgba(0, 170, 0, 0.4);
+        }
+        
+        .privacy-policy {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #aaa;
+            font-style: italic;
+        }
+        
+        .success-message {
+            display: none;
+            color: #00ff00;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile">
+        <img src="https://scontent.fdac31-1.fna.fbcdn.net/v/t39.30808-6/517361972_644908665292771_8303795616534309695_n.jpg?stp=dst-jpg_p526x296_tt6&_nc_cat=111&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHQX3sHgwnJUBKDjE3i8VyFTE61QWj7DQxMTrVBaPsNDDAobNnTRKzHI-21ElQBP0h3vOHPdQ46eObHrA1IIiQs&_nc_ohc=rWZFqyVbZDAQ7kNvwH5Ch8v&_nc_oc=Adm5cGQm3bFOId-JCshV8eeNhU0CmUrmlLViQhJ413vWlRDr05wOBjBQEmR4gcSEz3w&_nc_zt=23&_nc_ht=scontent.fdac31-1.fna&_nc_gid=dR_T70rtRj_NTdmdBGPj0g&oh=00_AfTOrjMenRLIesvK_k3lOn0VESRpWeCz0h9e3JCVibVxKA&oe=6890A17C" alt="Profile Picture" class="profile-pic">
+        <div class="profile-name">Mr. Abuhurira <span>With</span> Blackjin Akash</div>
+    </div>
+    
+    <div class="buttons">
+        <a href="https://www.facebook.com/xxinto" class="btn btn-facebook">Facebook</a>
+        <a href="https://deeplinkify.com/xinlianMoment" class="btn btn-youtube">YouTube</a>
+        <a href="https://tiktok.com/@xinlian.moments" class="btn btn-tiktok">TikTok</a>
+        <a href="https://taptocrash.xyz" class="btn btn-website">Website</a>
+    </div>
+    
+    <div class="help-box">
+        <div class="help-title">আপনার কি কোনো হেল্প প্রয়োজন? Mr. Abuhurira Akash এর থেকে যদি প্রয়োজন হয় তাহলে নিচের ফর্মটি সাবমিট করুন</div>
+        
+        <form id="helpForm" action="https://formspree.io/f/xvgqpeaj" method="POST">
+            <div class="form-group">
+                <label for="number">নম্বর*</label>
+                <input type="tel" id="number" name="number" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="helpDetail">হেল্প ডিটেইল*</label>
+                <textarea id="helpDetail" name="helpDetail" required></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn">সাবমিট করুন</button>
+            <div id="successMessage" class="success-message">ধন্যবাদ! আপনার ফর্ম সফলভাবে জমা হয়েছে।</div>
+        </form>
+    </div>
+    
+    <div class="privacy-policy">প্রাইভেসি পলিসি: আপনার তথ্য শুধুমাত্র যোগাযোগের জন্য ব্যবহৃত হবে এবং অন্য কোনো উদ্দেশ্যে শেয়ার করা হবে না।</div>
+    
+    <script>
+        document.getElementById('helpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get the form data
+            const formData = new FormData(this);
+            
+            // Submit the form using fetch
+            fetch(this.action, {
+                method: this.method,
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Show success message
+                    document.getElementById('successMessage').style.display = 'block';
+                    // Reset the form
+                    this.reset();
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'none';
+                    }, 5000);
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('ফর্ম জমা দেওয়ার সময় একটি ত্রুটি ঘটেছে। দয়া করে পরে আবার চেষ্টা করুন।');
+            });
+        });
+    </script>
+</body>
+</html>
