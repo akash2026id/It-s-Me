@@ -240,6 +240,23 @@
             margin-top: 15px;
             font-size: 16px;
         }
+		.copy-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: Arial, sans-serif;
+    }
+    .copy-btn {
+      padding: 5px 10px;
+      background-color: red;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .copy-btn:hover {
+      background-color: #333;
+    }
     </style>
 </head>
 <body>
@@ -262,7 +279,10 @@
             <p>Name: Mr. Abuhurira Akash</p>
             <p>I am a student.</p>
             <p>But My hobby is Conentent Creation On: Facebook, Tiktok, Youtube and Writing Proggrammer Ex: Html, Java Scrict, css, C++, C# Etc.</p>
-            <p>Contract: <a href="tel:01966061084"alt="01966061084"</p>
+            <div class="copy-container">
+			<p id="textToCopy">01966061084</p>
+			<button class="copy-btn" onclick="copyText()">Copy</button>
+			</div>
             <p>Location: Bangladesh </p>
             <p>Bio: "Allah gives people a break for a while, but He never gives up completely."
 🕋🤲💖</p>
@@ -299,6 +319,13 @@
         detailsBtn.addEventListener('click', function() {
             detailsBox.classList.toggle('show');
         });
+		
+		function copyText() {
+      const text = document.getElementById("textToCopy").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied: " + text);
+      });
+    }
         
         // Form submission
         document.getElementById('helpForm').addEventListener('submit', function(e) {
