@@ -44,6 +44,8 @@
         
         .profile-name {
             margin-top: 15px;
+			color: #00ff00;
+			weight: bold;
             font-size: 22px;
             text-align: center;
         }
@@ -103,7 +105,7 @@
         
         .btn-tiktok {
             background-color: cyan;
-            color: red;
+            color: black;
         }
         
         .btn-tiktok:hover {
@@ -262,6 +264,12 @@
     .copy-btn:hover {
       background-color: #333;
     }
+	
+	<!-- Fade animation -->
+@keyframes popFade {
+  from {opacity: 0; transform: scale(0.9);}
+  to {opacity: 1; transform: scale(1);}
+}
     </style>
 </head>
 <body>
@@ -278,23 +286,87 @@
         <button id="detailsBtn" class="btn btn-details">তার সম্পর্কে বিস্তারিত জানুন</button>
     </div>
     
-    <div id="detailsBox" class="details-box">
+		<div id="detailsBox" class="details-box">
         <div class="details-title">Mr. Abuhurira With Blackjin Akash সম্পর্কে</div>
         <div class="details-content">
-            <p>Name: Mr. Abuhurira Akash</p>
-            <p>I am a student.</p>
-            <p>But My hobby is Conentent Creation On: Facebook, Tiktok, Youtube and Writing Proggrammer Ex: Html, Java Scrict, css, C++, C# Etc.</p>
-            <div class="copy-container">
-			<p id="textToCopy">01966061084</p>
-			<button class="copy-btn" onclick="copyText()">Copy</button>
-			</div>
-            <p>Location: Bangladesh </p>
-            <p>Bio: "Allah gives people a break for a while, but He never gives up completely."
-🕋🤲💖</p>
-            <p>আমার সমস্ত সোশ্যাল মিডিয়া প্রোফাইলগুলো ফলো করে আমার সাথে কানেক্টেড থাকুন এবং আমার লেটেস্ট কন্টেন্টগুলো দেখুন।</p>
+            <p style="color: #00ff00;">My name is: <strong style="color: cyan;">Mr. Abuhurira Akash.</strong></p>
+		<p style="color: #00ff00;">I am passionate about medical technology and digital innovation.</p>
+		<p style="color: cyan;">I work as a Reception Officer at Satkhira Bushra Hospital.</p><br><br>
+				<p>Phone Number:</p>
+				<div class="copy-container">
+				<p style="color: #ffff00"id="textToCopy"><b>01966061084</b></p>
+				<button class="copy-btn" onclick="copyText()">Copy</button>
+				</div><br><br>
+			
+				<p style="color: #ffff00;">My official email is: <a href="mailto:abuhurira.bsh.rc@gmail.com" style="color: #00BFFF;">abuhurira.bsh.rc@gmail.com</a>.</p>
+				<p style="color: #ff00ff;">In my free time, I enjoy coding, video editing, and exploring new medical tools.</p>
+				<p style="color: cyan;">I also love creating YouTube content related to health and diagnostics.</p>
+				<p style="color: #00ff00;">Connecting with new ideas and helping others through 	technology is my favorite hobby.</p><br>
+
+				<p style="color: #ffff00">Location: Bangladesh </p><br>
+				<p style="color:cyan">Bio: <strong style="color: #00ff00">Allah gives people a break for a while, but He never gives up completely."
+				🕋🤲💖</strong></p><br><br>
+
+				<p style="color: #ff00ff"><b>True Line:</b></p>
+				<p style="color: #ffff00;"><b>💡 I believe in learning something new every day.</p>
+				<p style="color: #ffff00;">🎯 Focus and dedication are my keys to success.</p>
+				<p style="color: #ffff00;">💻 Coding is not just a skill — it’s my passion.</p>
+					<p style="color: #ffff00;">🌟 Always ready to take on new challenges with a smile.</b></p><br>
+
+            <p style="color: #ff00ff">আমার সমস্ত সোশ্যাল মিডিয়া প্রোফাইলগুলো ফলো করে আমার সাথে কানেক্টেড থাকুন এবং আমার লেটেস্ট কন্টেন্টগুলো দেখুন।</p>
         </div>
     </div>
+	
+	
+	<!-- Neon Popup Modal -->
+<div id="neonPopup" style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);">
     
+  <div style="
+      background: black;
+      padding: 30px;
+      border: 2px solid #0ff;
+      box-shadow: 0 0 20px #0ff, 0 0 40px #0ff;
+      color: #fff;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      border-radius: 15px;
+      max-width: 400px;
+      animation: popFade 0.5s ease-in-out;">
+      
+    <p style="font-size: 18px; line-height: 1.5;">
+      👋 Hey bro, what's up?<br><br>
+      💖 Do you love me so much that you even visited my website?<br><br>
+      🙏 Anyway, <strong style="color:#0ff;">Thank You</strong> for staying with me!
+    </p>
+    
+    <button onclick="closePopup()" style="
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #0ff;
+        border: none;
+        color: black;
+        font-weight: bold;
+        border-radius: 5px;
+        box-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+        cursor: pointer;">
+      Close
+    </button>
+  </div>
+</div>
+
+
+
+	
     <div class="help-box">
         <div class="help-title">আপনার কি কোনো হেল্প প্রয়োজন? Mr. Abuhurira Akash এর থেকে যদি প্রয়োজন হয় তাহলে নিচের ফর্মটি সাবমিট করুন</div>
         
@@ -317,55 +389,65 @@
     <div class="privacy-policy">প্রাইভেসি পলিসি: আপনার তথ্য শুধুমাত্র যোগাযোগের জন্য ব্যবহৃত হবে এবং অন্য কোনো উদ্দেশ্যে শেয়ার করা হবে না।</div>
     
     <script>
-        // Details button functionality
-        const detailsBtn = document.getElementById('detailsBtn');
-        const detailsBox = document.getElementById('detailsBox');
-        
-        detailsBtn.addEventListener('click', function() {
-            detailsBox.classList.toggle('show');
-        });
-		
-		function copyText() {
-      const text = document.getElementById("textToCopy").innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Copied: " + text);
-      });
+    // 🟩 Neon popup show on page load
+    window.addEventListener("load", function () {
+        document.getElementById("neonPopup").style.display = "flex";
+    });
+
+    // 🟥 Close popup function
+    function closePopup() {
+        document.getElementById("neonPopup").style.display = "none";
     }
-        
-        // Form submission
-        document.getElementById('helpForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Get the form data
-            const formData = new FormData(this);
-            
-            // Submit the form using fetch
-            fetch(this.action, {
-                method: this.method,
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Show success message
-                    document.getElementById('successMessage').style.display = 'block';
-                    // Reset the form
-                    this.reset();
-                    // Hide success message after 5 seconds
-                    setTimeout(() => {
-                        document.getElementById('successMessage').style.display = 'none';
-                    }, 5000);
-                } else {
-                    throw new Error('Form submission failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('ফর্ম জমা দেওয়ার সময় একটি ত্রুটি ঘটেছে। দয়া করে পরে আবার চেষ্টা করুন।');
-            });
+
+    // 📦 Details button functionality
+    const detailsBtn = document.getElementById('detailsBtn');
+    const detailsBox = document.getElementById('detailsBox');
+    
+    detailsBtn.addEventListener('click', function() {
+        detailsBox.classList.toggle('show');
+    });
+    
+    function copyText() {
+        const text = document.getElementById("textToCopy").innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Copied: " + text);
         });
-    </script>
+    }
+
+    // 📤 Form submission
+    document.getElementById('helpForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get the form data
+        const formData = new FormData(this);
+        
+        // Submit the form using fetch
+        fetch(this.action, {
+            method: this.method,
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Show success message
+                document.getElementById('successMessage').style.display = 'block';
+                // Reset the form
+                this.reset();
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 5000);
+            } else {
+                throw new Error('Form submission failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('ফর্ম জমা দেওয়ার সময় একটি ত্রুটি ঘটেছে। দয়া করে পরে আবার চেষ্টা করুন।');
+        });
+    });
+</script>
 </body>
 </html>
