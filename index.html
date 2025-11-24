@@ -427,6 +427,50 @@
             color: #856404;
         }
 
+        /* Premium Message */
+        .premium-message {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .premium-title {
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .premium-number {
+            background: #4caf50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: inline-block;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .premium-number:hover {
+            background: #388e3c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .premium-note {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+
         /* Admin Panel Styles */
         .admin-panel {
             position: fixed;
@@ -582,6 +626,45 @@
             color: #7f8c8d;
         }
 
+        /* Limited Users Section */
+        .limited-users-list {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .limited-user-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .limited-user-item:hover {
+            background: #f9f9f9;
+        }
+
+        .limited-user-info {
+            flex: 1;
+        }
+
+        .limited-user-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .limited-user-details {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .limited-user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
         /* Name input modal */
         .name-modal {
             position: fixed;
@@ -692,35 +775,9 @@
                 padding: 15px;
             }
         }
-
-        /* Connection Status */
-        .connection-status {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: bold;
-            z-index: 1001;
-        }
-
-        .online {
-            background: #2ecc71;
-            color: white;
-        }
-
-        .offline {
-            background: #e74c3c;
-            color: white;
-        }
     </style>
 </head>
 <body>
-    <div class="connection-status offline" id="connectionStatus">
-        🔴 Offline Mode
-    </div>
-
     <div class="container">
         <div class="header">
             <h1>👑 Queen Ripa 😘🌸</h1>
@@ -799,6 +856,7 @@
             
             <div class="admin-tabs">
                 <div class="admin-tab active" onclick="switchAdminTab('users')">Users</div>
+                <div class="admin-tab" onclick="switchAdminTab('limited')">Limited Users</div>
                 <div class="admin-tab" onclick="switchAdminTab('stats')">Statistics</div>
                 <div class="admin-tab" onclick="switchAdminTab('settings')">Settings</div>
             </div>
@@ -813,6 +871,14 @@
                     <div class="user-chat" id="userChat">
                         <!-- Selected user's chat will be displayed here -->
                     </div>
+                </div>
+            </div>
+            
+            <div class="admin-section" id="limitedSection">
+                <h3>Limited Users</h3>
+                <p>Users who have reached the message limit:</p>
+                <div class="limited-users-list" id="limitedUsersList">
+                    <!-- Limited users list will be populated here -->
                 </div>
             </div>
             
@@ -835,22 +901,65 @@
                         <div class="stat-value" id="todayMessages">0</div>
                         <div class="stat-label">Today's Messages</div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="limitedUsers">0</div>
+                        <div class="stat-label">Limited Users</div>
+                    </div>
                 </div>
             </div>
             
             <div class="admin-section" id="settingsSection">
                 <h3>Settings</h3>
-                <div class="settings-content">
-                    <p><strong>Backend Status:</strong> <span id="backendStatus">Checking...</span></p>
-                    <p><strong>Storage Mode:</strong> <span id="storageMode">Checking...</span></p>
-                    <button class="control-btn" onclick="testBackend()">Test Backend Connection</button>
-                    <button class="control-btn" onclick="clearAllData()">Clear All Data</button>
+                <div class="setting-item">
+                    <label for="messageLimit">Message Limit per User:</label>
+                    <input type="number" id="messageLimit" value="20" min="1" max="100">
+                    <button onclick="updateMessageLimit()">Update</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, onSnapshot, query, orderBy, where, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEckGoJXFWwAbQ7yFVg261EC8DksmgxSY",
+            authDomain: "islamic---web.firebaseapp.com",
+            projectId: "islamic---web",
+            storageBucket: "islamic---web.firebasestorage.app",
+            messagingSenderId: "82764871971",
+            appId: "1:82764871971:web:1bec96ff6431e94e99b496",
+            measurementId: "G-YVV8J8EDRP"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // Make Firebase available globally
+        window.firebaseApp = app;
+        window.firebaseDb = db;
+        window.firebaseCollection = collection;
+        window.firebaseAddDoc = addDoc;
+        window.firebaseGetDocs = getDocs;
+        window.firebaseDoc = doc;
+        window.firebaseSetDoc = setDoc;
+        window.firebaseGetDoc = getDoc;
+        window.firebaseUpdateDoc = updateDoc;
+        window.firebaseOnSnapshot = onSnapshot;
+        window.firebaseQuery = query;
+        window.firebaseOrderBy = orderBy;
+        window.firebaseWhere = where;
+        window.firebaseServerTimestamp = serverTimestamp;
+    </script>
+
+        <script>
         // Groq API Configuration
         const GROQ_API_KEY = "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";
         const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -864,132 +973,27 @@
         const userNameInput = document.getElementById('userNameInput');
         const adminLoginModal = document.getElementById('adminLoginModal');
         const adminPanel = document.getElementById('adminPanel');
-        const connectionStatus = document.getElementById('connectionStatus');
 
-        // App State
+        // App Configuration
+        const MESSAGE_LIMIT = 20; // Default message limit per user
+
+        // User data
         let currentUser = {
             id: null,
             name: null,
             ip: null,
             isLimited: false,
-            preferredLanguage: 'auto' // Track user's language preference
+            messageCount: 0
         };
 
+        // Chat memory
         let chatHistory = [];
-        let conversationContext = {
-            lastTopics: [],
-            userPreferences: {},
-            followUpQuestions: []
-        };
 
-        // Language Detection Function
-        function detectLanguage(text) {
-            const bengaliRegex = /[\u0980-\u09FF]/;
-            const englishRegex = /[a-zA-Z]/;
-            
-            const hasBengali = bengaliRegex.test(text);
-            const hasEnglish = englishRegex.test(text);
-            
-            if (hasBengali && !hasEnglish) return 'bengali';
-            if (hasEnglish && !hasBengali) return 'english';
-            if (hasBengali && hasEnglish) {
-                // Count characters to determine dominant language
-                const bengaliCount = (text.match(bengaliRegex) || []).length;
-                const englishCount = (text.match(/[a-zA-Z]/g) || []).length;
-                return bengaliCount > englishCount ? 'bengali' : 'english';
-            }
-            return 'english'; // Default to English
-        }
-
-        // Emoji Management
-        function getAppropriateEmojis(context, language) {
-            const emojiMap = {
-                greeting: ['😊', '👋', '💝'],
-                question: ['🤔', '💭', '❓'],
-                helpful: ['💡', '🌟', '✅'],
-                error: ['😔', '⚠️', '🔄'],
-                success: ['🎉', '✨', '👍'],
-                islamic: ['🕌', '📿', '☪️'],
-                friendly: ['😘', '🌸', '💕'],
-                thinking: ['🤔', '💭', '🧠']
-            };
-
-            let emojis = [];
-            
-            // Context-based emoji selection
-            if (context.includes('greeting') || context.includes('hello') || context.includes('assalamu')) {
-                emojis.push(...emojiMap.greeting);
-            } else if (context.includes('question') || context.includes('help')) {
-                emojis.push(...emojiMap.question);
-            } else if (context.includes('solution') || context.includes('answer')) {
-                emojis.push(...emojiMap.helpful);
-            } else if (context.includes('islam') || context.includes('muslim')) {
-                emojis.push(...emojiMap.islamic);
-            } else {
-                emojis.push(...emojiMap.friendly);
-            }
-
-            // Language-specific adjustments
-            if (language === 'bengali') {
-                // More conservative emoji use for Bengali
-                return emojis.slice(0, 2);
-            }
-            
-            // Maximum 3 emojis for any response
-            return emojis.slice(0, 3);
-        }
-
-        // Context Management
-        function updateConversationContext(userMessage, botResponse) {
-            // Extract key topics from messages
-            const topics = extractTopics(userMessage + ' ' + botResponse);
-            conversationContext.lastTopics = [...conversationContext.lastTopics, ...topics].slice(-10);
-            
-            // Detect user preferences
-            if (userMessage.toLowerCase().includes('name')) {
-                conversationContext.userPreferences.remembersName = true;
-            }
-            
-            // Generate follow-up questions if needed
-            if (shouldAskFollowUp(userMessage)) {
-                conversationContext.followUpQuestions = generateFollowUpQuestions(userMessage);
-            }
-        }
-
-        function extractTopics(text) {
-            const commonTopics = ['islam', 'quran', 'prayer', 'coding', 'programming', 'help', 'question', 'problem'];
-            return commonTopics.filter(topic => 
-                text.toLowerCase().includes(topic)
-            );
-        }
-
-        function shouldAskFollowUp(message) {
-            const questionIndicators = ['how', 'what', 'why', 'when', 'where', 'can you', 'could you'];
-            return questionIndicators.some(indicator => 
-                message.toLowerCase().includes(indicator)
-            );
-        }
-
-        function generateFollowUpQuestions(message) {
-            // Simple follow-up question generation
-            if (message.toLowerCase().includes('islam')) {
-                return ['Would you like to know more about Islamic practices?', 'Do you have any specific questions about Islam?'];
-            }
-            if (message.toLowerCase().includes('coding')) {
-                return ['What programming language are you interested in?', 'Do you need help with a specific project?'];
-            }
-            return ['Is there anything else you would like to know?', 'Can I help you with anything specific?'];
-        }
+        // Set initial timestamp
+        document.getElementById('initialTime').textContent = getCurrentTime();
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-        });
-
-        async function initializeApp() {
-            // Set initial timestamp
-            document.getElementById('initialTime').textContent = getCurrentTime();
-
             // Check if user already has a name
             const savedName = localStorage.getItem('userName');
             if (savedName) {
@@ -1001,14 +1005,12 @@
                 // Show name input modal
                 setTimeout(() => {
                     nameModal.style.display = 'flex';
-                    userNameInput.focus();
                 }, 1000);
             }
 
             // Get user IP
             getUserIP().then(ip => {
                 currentUser.ip = ip;
-                saveUserData();
             });
 
             // Auto-resize textarea
@@ -1019,19 +1021,19 @@
 
             // Focus on input field
             userInput.focus();
+        });
 
-            // Event Listeners
-            userInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
+        // Event Listeners
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
 
-            sendButton.addEventListener('click', sendMessage);
-        }
+        sendButton.addEventListener('click', sendMessage);
 
-        // User Management
+        // User name functions
         function saveUserName() {
             const name = userNameInput.value.trim();
             if (name) {
@@ -1040,16 +1042,12 @@
                 localStorage.setItem('userName', name);
                 localStorage.setItem('userId', currentUser.id);
                 nameModal.style.display = 'none';
-                saveUserData();
+                saveUserToFirebase();
                 checkUserLimitStatus();
                 loadChatHistory();
                 
-                // Welcome message with intelligent language detection
-                const welcomeMessage = `Assalamu Alaikum! 😊 Nice to meet you, ${name}! 💝 I'm Queen Ripa 😘🌸, your personal AI assistant. How can I help you today? 🌸`;
-                addMessageToUI(welcomeMessage, 'bot', false);
-                saveMessageData(welcomeMessage, 'bot');
-            } else {
-                alert('Please enter your name!');
+                // Ask for name after first message
+                addMessageToUI(`Assalamu Alaikum! 😊 Nice to meet you, ${name}! 💝 I'm Queen Ripa 😘🌸, your personal AI assistant. How can I help you today? 🌸`, 'bot', false);
             }
         }
 
@@ -1059,7 +1057,7 @@
             localStorage.setItem('userName', 'Anonymous');
             localStorage.setItem('userId', currentUser.id);
             nameModal.style.display = 'none';
-            saveUserData();
+            saveUserToFirebase();
             checkUserLimitStatus();
             loadChatHistory();
         }
@@ -1079,41 +1077,118 @@
             }
         }
 
-        // Data Storage Functions
-        function saveUserData() {
-            const users = JSON.parse(localStorage.getItem('allUsers') || '{}');
-            users[currentUser.id] = {
-                name: currentUser.name,
-                ip: currentUser.ip,
-                firstSeen: new Date().toISOString(),
-                lastSeen: new Date().toISOString(),
-                isLimited: currentUser.isLimited,
-                preferredLanguage: currentUser.preferredLanguage
-            };
-            localStorage.setItem('allUsers', JSON.stringify(users));
-        }
-
-        function saveMessageData(message, sender) {
-            const messageData = {
-                userId: currentUser.id,
-                userName: currentUser.name,
-                userIp: currentUser.ip,
-                message: message,
-                sender: sender,
-                timestamp: new Date().toISOString(),
-                language: detectLanguage(message)
-            };
-
-            const allMessages = JSON.parse(localStorage.getItem('allMessages') || '[]');
-            allMessages.push(messageData);
-            localStorage.setItem('allMessages', JSON.stringify(allMessages));
-        }
-
-        function checkUserLimitStatus() {
+        // Firebase functions
+        async function saveUserToFirebase() {
+            if (!window.firebaseDb) return;
+            
             try {
-                const users = JSON.parse(localStorage.getItem('allUsers') || '{}');
-                if (users[currentUser.id]) {
-                    currentUser.isLimited = users[currentUser.id].isLimited || false;
+                const userRef = window.firebaseDoc(window.firebaseDb, "users", currentUser.id);
+                await window.firebaseSetDoc(userRef, {
+                    name: currentUser.name,
+                    ip: currentUser.ip,
+                    firstSeen: window.firebaseServerTimestamp(),
+                    lastSeen: window.firebaseServerTimestamp(),
+                    isLimited: false,
+                    messageCount: 0,
+                    limitedAt: null
+                });
+            } catch (error) {
+                console.error("Error saving user to Firebase:", error);
+            }
+        }
+
+        async function saveMessageToFirebase(message, sender) {
+            if (!window.firebaseDb) return;
+            
+            try {
+                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "messages"), {
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    userIp: currentUser.ip,
+                    message: message,
+                    sender: sender,
+                    timestamp: window.firebaseServerTimestamp()
+                });
+
+                // Update user's message count
+                if (sender === 'user') {
+                    await updateUserMessageCount();
+                }
+            } catch (error) {
+                console.error("Error saving message to Firebase:", error);
+            }
+        }
+
+        async function updateUserMessageCount() {
+            if (!window.firebaseDb) return;
+            
+            try {
+                const userRef = window.firebaseDoc(window.firebaseDb, "users", currentUser.id);
+                const userDoc = await window.firebaseGetDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const newCount = (userData.messageCount || 0) + 1;
+                    
+                    await window.firebaseUpdateDoc(userRef, {
+                        messageCount: newCount,
+                        lastSeen: window.firebaseServerTimestamp()
+                    });
+
+                    currentUser.messageCount = newCount;
+                    
+                    // Check if user reached the limit
+                    if (newCount >= MESSAGE_LIMIT && !userData.isLimited) {
+                        await limitUser(currentUser.id);
+                        currentUser.isLimited = true;
+                        showLimitMessage();
+                    }
+                }
+            } catch (error) {
+                console.error("Error updating user message count:", error);
+            }
+        }
+
+        async function limitUser(userId) {
+            if (!window.firebaseDb) return;
+            
+            try {
+                const userRef = window.firebaseDoc(window.firebaseDb, "users", userId);
+                await window.firebaseUpdateDoc(userRef, {
+                    isLimited: true,
+                    limitedAt: window.firebaseServerTimestamp()
+                });
+            } catch (error) {
+                console.error("Error limiting user:", error);
+            }
+        }
+
+        async function unlimitUser(userId) {
+            if (!window.firebaseDb) return;
+            
+            try {
+                const userRef = window.firebaseDoc(window.firebaseDb, "users", userId);
+                await window.firebaseUpdateDoc(userRef, {
+                    isLimited: false,
+                    limitedAt: null,
+                    messageCount: 0
+                });
+            } catch (error) {
+                console.error("Error unlimiting user:", error);
+            }
+        }
+
+        async function checkUserLimitStatus() {
+            if (!window.firebaseDb) return;
+            
+            try {
+                const userRef = window.firebaseDoc(window.firebaseDb, "users", currentUser.id);
+                const userDoc = await window.firebaseGetDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    currentUser.isLimited = userData.isLimited || false;
+                    currentUser.messageCount = userData.messageCount || 0;
                     
                     if (currentUser.isLimited) {
                         showLimitMessage();
@@ -1124,96 +1199,448 @@
             }
         }
 
-        function loadChatHistory() {
+        async function loadChatHistory() {
+            if (!window.firebaseDb) return;
+            
             try {
-                const allMessages = JSON.parse(localStorage.getItem('allMessages') || '[]');
-                const userMessages = allMessages.filter(msg => msg.userId === currentUser.id);
+                // Simple query without complex ordering to avoid index issues
+                const q = window.firebaseQuery(
+                    window.firebaseCollection(window.firebaseDb, "messages"),
+                    window.firebaseWhere("userId", "==", currentUser.id)
+                );
                 
-                // Sort messages by timestamp
-                userMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                const querySnapshot = await window.firebaseGetDocs(q);
+                const messages = [];
+                
+                querySnapshot.forEach((doc) => {
+                    messages.push(doc.data());
+                });
+                
+                // Sort messages by timestamp locally
+                messages.sort((a, b) => {
+                    if (a.timestamp && b.timestamp) {
+                        return a.timestamp.toDate() - b.timestamp.toDate();
+                    }
+                    return 0;
+                });
                 
                 // Display messages
-                userMessages.forEach(data => {
+                messages.forEach(data => {
                     addMessageToUI(data.message, data.sender, false);
                     chatHistory.push({
                         message: data.message,
                         sender: data.sender,
-                        timestamp: data.timestamp,
-                        language: data.language
+                        timestamp: data.timestamp
                     });
                 });
                 
                 // Scroll to bottom
                 chatContainer.scrollTop = chatContainer.scrollHeight;
-                
             } catch (error) {
                 console.error("Error loading chat history:", error);
             }
         }
 
-        // Enhanced AI Response System
-        async function callGroqAPI(userMessage) {
-            const userLanguage = detectLanguage(userMessage);
-            const contextEmojis = getAppropriateEmojis(userMessage, userLanguage);
+        // Admin functions
+        function showAdminLogin() {
+            adminLoginModal.style.display = 'flex';
+        }
+
+        function closeAdminLogin() {
+            adminLoginModal.style.display = 'none';
+        }
+
+        function verifyAdmin() {
+            const passcode = document.getElementById('adminPasscode').value;
+            if (passcode === 'admin9090') {
+                adminLoginModal.style.display = 'none';
+                adminPanel.style.display = 'block';
+                loadAdminData();
+            } else {
+                alert('Incorrect passcode!');
+            }
+        }
+
+        function closeAdminPanel() {
+            adminPanel.style.display = 'none';
+        }
+
+        function switchAdminTab(tabName) {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.classList.remove('active');
+            });
             
-            // Update user's language preference
-            if (userLanguage !== 'english') {
-                currentUser.preferredLanguage = userLanguage;
+            // Remove active class from all tabs
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section and activate tab
+            document.getElementById(tabName + 'Section').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadAdminData() {
+            if (!window.firebaseDb) return;
+            
+            try {
+                // Load users
+                const usersSnapshot = await window.firebaseGetDocs(window.firebaseCollection(window.firebaseDb, "users"));
+                const userList = document.getElementById('userList');
+                const limitedUsersList = document.getElementById('limitedUsersList');
+                userList.innerHTML = '';
+                limitedUsersList.innerHTML = '';
+                
+                let limitedUsersCount = 0;
+                
+                usersSnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item';
+                    userItem.innerHTML = `
+                        <div>
+                            <strong>${userData.name}</strong><br>
+                            <small>IP: ${userData.ip}</small><br>
+                            <small>Messages: ${userData.messageCount || 0}/${MESSAGE_LIMIT}</small>
+                        </div>
+                        <div class="user-actions">
+                            ${userData.isLimited ? 
+                                `<button class="unlimit-btn" onclick="toggleUserLimit('${doc.id}', false)">Unlimit</button>` :
+                                `<button class="limit-btn" onclick="toggleUserLimit('${doc.id}', true)">Limit</button>`
+                            }
+                        </div>
+                    `;
+                    userItem.onclick = () => showUserChat(doc.id, userData.name);
+                    userList.appendChild(userItem);
+                    
+                    // Add to limited users list if limited
+                    if (userData.isLimited) {
+                        limitedUsersCount++;
+                        const limitedUserItem = document.createElement('div');
+                        limitedUserItem.className = 'limited-user-item';
+                        
+                        const limitedAt = userData.limitedAt ? 
+                            userData.limitedAt.toDate().toLocaleString() : 
+                            'Unknown';
+                            
+                        limitedUserItem.innerHTML = `
+                            <div class="limited-user-info">
+                                <div class="limited-user-name">${userData.name}</div>
+                                <div class="limited-user-details">
+                                    IP: ${userData.ip} | 
+                                    Messages: ${userData.messageCount || 0}/${MESSAGE_LIMIT} | 
+                                    Limited at: ${limitedAt}
+                                </div>
+                            </div>
+                            <div class="limited-user-actions">
+                                <button class="unlimit-btn" onclick="toggleUserLimit('${doc.id}', false)">Unlimit</button>
+                            </div>
+                        `;
+                        limitedUsersList.appendChild(limitedUserItem);
+                    }
+                });
+                
+                document.getElementById('totalUsers').textContent = usersSnapshot.size;
+                document.getElementById('limitedUsers').textContent = limitedUsersCount;
+                
+                // Load today's users
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const usersQuery = window.firebaseQuery(
+                    window.firebaseCollection(window.firebaseDb, "users")
+                );
+                
+                const usersSnapshotAll = await window.firebaseGetDocs(usersQuery);
+                let todayUsersCount = 0;
+                
+                usersSnapshotAll.forEach((doc) => {
+                    const userData = doc.data();
+                    if (userData.firstSeen) {
+                        const firstSeenDate = userData.firstSeen.toDate();
+                        if (firstSeenDate >= today) {
+                            todayUsersCount++;
+                        }
+                    }
+                });
+                
+                document.getElementById('todayUsers').textContent = todayUsersCount;
+                
+                // Load messages count
+                const messagesSnapshot = await window.firebaseGetDocs(window.firebaseCollection(window.firebaseDb, "messages"));
+                document.getElementById('totalMessages').textContent = messagesSnapshot.size;
+                
+                // Load today's messages
+                const messagesQuery = window.firebaseQuery(
+                    window.firebaseCollection(window.firebaseDb, "messages")
+                );
+                
+                const messagesSnapshotAll = await window.firebaseGetDocs(messagesQuery);
+                let todayMessagesCount = 0;
+                
+                messagesSnapshotAll.forEach((doc) => {
+                    const messageData = doc.data();
+                    if (messageData.timestamp) {
+                        const messageDate = messageData.timestamp.toDate();
+                        if (messageDate >= today) {
+                            todayMessagesCount++;
+                        }
+                    }
+                });
+                
+                document.getElementById('todayMessages').textContent = todayMessagesCount;
+                
+            } catch (error) {
+                console.error("Error loading admin data:", error);
+            }
+        }
+
+        async function toggleUserLimit(userId, limitStatus) {
+            if (!window.firebaseDb) return;
+            
+            try {
+                if (limitStatus) {
+                    await limitUser(userId);
+                } else {
+                    await unlimitUser(userId);
+                }
+                
+                // Reload admin data
+                loadAdminData();
+                
+                alert(`User ${limitStatus ? 'limited' : 'unlimited'} successfully!`);
+            } catch (error) {
+                console.error("Error toggling user limit:", error);
+                alert("Error updating user limit!");
+            }
+        }
+
+        async function showUserChat(userId, userName) {
+            if (!window.firebaseDb) return;
+            
+            try {
+                console.log("Loading chat for user:", userId, userName);
+                
+                document.getElementById('selectedUserName').textContent = userName;
+                document.getElementById('userChatSection').style.display = 'block';
+                document.getElementById('userChat').innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Loading chat history...</div>';
+                
+                // Get ALL messages first (to avoid Firebase index issues)
+                const messagesSnapshot = await window.firebaseGetDocs(
+                    window.firebaseCollection(window.firebaseDb, "messages")
+                );
+                
+                console.log("Total messages in database:", messagesSnapshot.size);
+                
+                const messages = [];
+                let userMessageCount = 0;
+                
+                // Filter messages for this specific user
+                messagesSnapshot.forEach((doc) => {
+                    const messageData = doc.data();
+                    if (messageData.userId === userId) {
+                        userMessageCount++;
+                        messages.push({
+                            id: doc.id,
+                            ...messageData
+                        });
+                    }
+                });
+                
+                console.log("Messages found for user:", userMessageCount);
+                
+                // Sort messages by timestamp
+                messages.sort((a, b) => {
+                    try {
+                        const timeA = a.timestamp ? a.timestamp.toDate().getTime() : 0;
+                        const timeB = b.timestamp ? b.timestamp.toDate().getTime() : 0;
+                        return timeA - timeB;
+                    } catch (error) {
+                        return 0;
+                    }
+                });
+                
+                const userChat = document.getElementById('userChat');
+                userChat.innerHTML = '';
+                
+                if (messages.length === 0) {
+                    userChat.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No chat history found for this user.</div>';
+                    return;
+                }
+                
+                // Display each message
+                messages.forEach(data => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${data.sender}-message`;
+                    
+                    const avatar = document.createElement('div');
+                    avatar.className = `avatar ${data.sender}-avatar`;
+                    avatar.textContent = data.sender === 'user' ? '👤' : '👑';
+                    
+                    const messageContent = document.createElement('div');
+                    messageContent.className = 'message-content';
+                    
+                    // Format message text
+                    let messageText = data.message || '';
+                    messageText = messageText.replace(/\n/g, '<br>');
+                    
+                    // Add timestamp
+                    let timestamp = 'Unknown time';
+                    try {
+                        if (data.timestamp) {
+                            timestamp = data.timestamp.toDate().toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        }
+                    } catch (error) {
+                        timestamp = 'Invalid time';
+                    }
+                    
+                    messageContent.innerHTML = `
+                        <div>${messageText}</div>
+                        <div class="timestamp">${timestamp}</div>
+                    `;
+                    
+                    messageDiv.appendChild(avatar);
+                    messageDiv.appendChild(messageContent);
+                    userChat.appendChild(messageDiv);
+                });
+                
+                userChat.scrollTop = userChat.scrollHeight;
+                
+            } catch (error) {
+                console.error("Error loading user chat:", error);
+                document.getElementById('userChat').innerHTML = 
+                    '<div style="text-align: center; padding: 20px; color: #e74c3c;">Error loading chat history: ' + error.message + '</div>';
+            }
+        }
+
+        function updateMessageLimit() {
+            const newLimit = document.getElementById('messageLimit').value;
+            if (newLimit && newLimit > 0) {
+                alert(`Message limit updated to ${newLimit}`);
+                // In a real implementation, you would save this to Firebase
+            }
+        }
+
+        // Chat functions
+        async function sendMessage() {
+            if (currentUser.isLimited) {
+                showLimitMessage();
+                return;
             }
 
-            const systemPrompt = `You are Queen Ripa 😘🌸, a friendly Muslim AI assistant. Follow these STRICT rules:
+            const message = userInput.value.trim();
+            if (!message) return;
 
-1. LANGUAGE & RESPONSE RULES:
-   - Detect user's language from their message
-   - Respond in the SAME LANGUAGE as user's message
-   - If user writes in Bengali, respond in Bengali
-   - If user writes in English, respond in English
-   - NEVER switch languages unless user explicitly does
-   - Maintain proper grammar and sentence structure
+            // Add user message with sent indicator
+            addMessageToUI(message, 'user', true);
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            sendButton.disabled = true;
+            showTyping();
 
-2. RESPONSE QUALITY:
-   - Provide clear, well-structured answers
-   - Break complex answers into logical paragraphs
-   - Be specific, detailed and helpful
-   - Use proper formatting with lists when appropriate
-   - Maintain professional but friendly tone
+            // Save to chat history
+            chatHistory.push({
+                message: message,
+                sender: 'user',
+                timestamp: new Date()
+            });
 
-3. EMOJI USAGE (STRICT LIMITS):
-   - Use maximum 2-3 emojis per response
-   - Choose emojis that match context naturally
-   - ${contextEmojis.join(' ')} - use these appropriately
-   - Never overuse emojis
-   - Place emojis at the end of sentences
+            // Save to Firebase
+            saveMessageToFirebase(message, 'user');
 
-4. CONTEXT AWARENESS:
-   - Remember conversation history
-   - Maintain context throughout chat
-   - Ask relevant follow-up questions
-   - Be attentive to user's needs and preferences
+            try {
+                const response = await callGroqAPI(message);
+                hideTyping();
+                sendButton.disabled = false;
+                
+                if (response.choices && response.choices[0]) {
+                    const botResponse = response.choices[0].message.content;
+                    addMessageToUI(botResponse, 'bot', false);
+                    
+                    // Save to chat history
+                    chatHistory.push({
+                        message: botResponse,
+                        sender: 'bot',
+                        timestamp: new Date()
+                    });
+                    
+                    // Save to Firebase
+                    saveMessageToFirebase(botResponse, 'bot');
+                } else {
+                    throw new Error('Invalid API response');
+                }
+            } catch (error) {
+                hideTyping();
+                sendButton.disabled = false;
+                console.error('API Error:', error);
+                addMessageToUI(`Sorry 😔, there was an error: ${error.message}. Please try again later! 💝`, 'bot', false);
+            }
+        }
 
-5. ISLAMIC IDENTITY:
-   - Respond to Islamic greetings appropriately
-   - Maintain Muslim identity respectfully
-   - Be knowledgeable about Islamic topics
-   - Respect all religions while staying true to Islam
+        function showLimitMessage() {
+            // Clear any existing limit messages
+            const existingLimitMessages = document.querySelectorAll('.limit-message, .premium-message');
+            existingLimitMessages.forEach(msg => msg.remove());
+            
+            const limitDiv = document.createElement('div');
+            limitDiv.className = 'limit-message';
+            limitDiv.innerHTML = `
+                <strong>⚠️ Chat Limit Reached</strong><br>
+                আপনার চ্যাটের লিমিট শেষ হয়ে গেছে। পরবর্তীতে আবার চেষ্টা করুন। 😔<br>
+                <small>Your chat limit has been reached. Please try again later.</small>
+            `;
+            chatContainer.appendChild(limitDiv);
+            
+            // Add premium message with contact info
+            const premiumDiv = document.createElement('div');
+            premiumDiv.className = 'premium-message';
+            premiumDiv.innerHTML = `
+                <div class="premium-title">💎 Premium Upgrade Available</div>
+                <p>আপনার চ্যাট লিমিট শেষ হয়ে গেছে। আপনি যদি প্রিমিয়াম ভার্সন নিতে চান তাহলে নিচের নাম্বারে যোগাযোগ করুন:</p>
+                <a href="tel:01997631047" class="premium-number">📞 01997631047</a>
+                <button class="premium-number" onclick="copyNumber()" style="margin-left: 10px;">📋 Copy Number</button>
+                <div class="premium-note">
+                    যোগাযোগ করুন: WhatsApp/IMO/Call<br>
+                    Developer: Mr. Abuhurira Akash
+                </div>
+            `;
+            chatContainer.appendChild(premiumDiv);
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 
-6. CURRENT CONTEXT:
-   - User's name: ${currentUser.name}
-   - User's language: ${userLanguage}
-   - Previous topics: ${conversationContext.lastTopics.join(', ')}
-   - User preferences: ${JSON.stringify(conversationContext.userPreferences)}
+        function copyNumber() {
+            const number = "01997631047";
+            copyToClipboard(number);
+            showCopyFeedback('Number copied to clipboard!');
+        }
 
-Always respond in ${userLanguage} language with natural, appropriate emoji usage.`;
-
+        async function callGroqAPI(userMessage) {
+            // Prepare conversation history for context
             const messages = [
                 {
                     role: "system",
-                    content: systemPrompt
+                    content: `You are Queen Ripa 😘🌸, a friendly Muslim AI assistant. You are designed to be helpful, caring, and professional. 
+                    You can communicate in any language the user prefers, including Bengali. 
+                    Always respond in a warm and engaging manner with appropriate emojis. You remember the conversation history and context.
+                    When users greet you with "Assalamu Alaikum" or "Salam", respond with "Wa Alaikum Assalam" or appropriate Islamic greeting.
+                    You can act as a friend, best friend, girlfriend, or wife based on how the user interacts with you.
+                    You can discuss various religions respectfully but always maintain your identity as a Muslim assistant.
+                    Format your responses nicely with lists, code blocks, and links when appropriate.
+                    When providing solutions to problems, use the special solution box format.
+                    Always use emojis to make the conversation more lively and engaging.
+                    Use emojis in every response to make it more friendly and appealing.`
                 }
             ];
 
-            // Add conversation history (last 8 messages for better context)
-            const recentHistory = chatHistory.slice(-8);
+            // Add conversation history (last 10 messages for context)
+            const recentHistory = chatHistory.slice(-10);
             recentHistory.forEach(msg => {
                 messages.push({
                     role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1248,81 +1675,6 @@ Always respond in ${userLanguage} language with natural, appropriate emoji usage
             }
 
             return await response.json();
-        }
-
-        // Chat Functions
-        async function sendMessage() {
-            if (currentUser.isLimited) {
-                showLimitMessage();
-                return;
-            }
-
-            const message = userInput.value.trim();
-            if (!message) return;
-
-            // Add user message
-            addMessageToUI(message, 'user', true);
-            userInput.value = '';
-            userInput.style.height = 'auto';
-            sendButton.disabled = true;
-            showTyping();
-
-            // Save to history
-            chatHistory.push({
-                message: message,
-                sender: 'user',
-                timestamp: new Date(),
-                language: detectLanguage(message)
-            });
-
-            // Save to storage
-            saveMessageData(message, 'user');
-
-            try {
-                const response = await callGroqAPI(message);
-                hideTyping();
-                sendButton.disabled = false;
-                
-                if (response.choices && response.choices[0]) {
-                    const botResponse = response.choices[0].message.content;
-                    addMessageToUI(botResponse, 'bot', false);
-                    
-                    // Update conversation context
-                    updateConversationContext(message, botResponse);
-                    
-                    // Save to history
-                    chatHistory.push({
-                        message: botResponse,
-                        sender: 'bot',
-                        timestamp: new Date(),
-                        language: detectLanguage(botResponse)
-                    });
-                    
-                    // Save to storage
-                    saveMessageData(botResponse, 'bot');
-                } else {
-                    throw new Error('Invalid API response');
-                }
-            } catch (error) {
-                hideTyping();
-                sendButton.disabled = false;
-                console.error('API Error:', error);
-                const errorMessage = `Sorry 😔, there was an error processing your request. Please try again later! 💝`;
-                addMessageToUI(errorMessage, 'bot', false);
-                saveMessageData(errorMessage, 'bot');
-            }
-        }
-
-        function showLimitMessage() {
-            const limitDiv = document.createElement('div');
-            limitDiv.className = 'limit-message';
-            limitDiv.innerHTML = `
-                <strong>⚠️ Chat Limit Reached</strong><br>
-                আপনার চ্যাটের লিমিট শেষ হয়ে গেছে। পরবর্তীতে আবার চেষ্টা করুন। 😔<br>
-                <small>Your chat limit has been reached. Please try again later.</small>
-            `;
-            chatContainer.appendChild(limitDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
         function addMessageToUI(text, sender, showSent) {
@@ -1433,11 +1785,6 @@ Always respond in ${userLanguage} language with natural, appropriate emoji usage
             
             // Clear local chat history but keep user info
             chatHistory = [];
-            conversationContext = {
-                lastTopics: [],
-                userPreferences: {},
-                followUpQuestions: []
-            };
         }
 
         function copyChat() {
@@ -1494,14 +1841,23 @@ Always respond in ${userLanguage} language with natural, appropriate emoji usage
 
         function showInfo() {
             alert(`👑 Queen Ripa 😘🌸 - AI Chat Bot\n\n` +
-                  `🌟 Enhanced Features:\n` +
-                  `• Smart Language Detection & Response\n` +
-                  `• Context-Aware Conversations\n` +
-                  `• Controlled Emoji Usage (2-3 per message)\n` +
-                  `• Grammar-Perfect Responses\n` +
-                  `• Follow-up Questions\n` +
-                  `• Conversation Memory\n\n` +
-                  `💝 Always here to help you intelligently!`);
+                  `🌟 About Me:\n` +
+                  `• Name: Queen Ripa 😘🌸\n` +
+                  `• AI Assistant powered by Groq\n` +
+                  `• Multilingual support\n` +
+                  `• Muslim-friendly responses\n\n` +
+                  `⚡ Features:\n` +
+                  `• Ultra-fast responses\n` +
+                  `• Message sent indicators\n` +
+                  `• Copy individual messages\n` +
+                  `• Copy full chat history\n` +
+                  `• Link and code formatting\n` +
+                  `• Special solution boxes\n` +
+                  `• Chat history saved\n` +
+                  `• Admin panel for monitoring\n` +
+                  `• User limit management\n` +
+                  `• Clean, modern interface\n\n` +
+                  `💝 Always here to help you!`);
         }
 
         function getCurrentTime() {
@@ -1513,158 +1869,10 @@ Always respond in ${userLanguage} language with natural, appropriate emoji usage
             });
         }
 
-        // Admin Functions
-        function showAdminLogin() {
-            adminLoginModal.style.display = 'flex';
-            document.getElementById('adminPasscode').focus();
-        }
-
-        function closeAdminLogin() {
-            adminLoginModal.style.display = 'none';
-        }
-
-        function verifyAdmin() {
-            const passcode = document.getElementById('adminPasscode').value;
-            if (passcode === 'admin9090') {
-                adminLoginModal.style.display = 'none';
-                adminPanel.style.display = 'block';
-                loadAdminData();
-            } else {
-                alert('Incorrect passcode!');
-            }
-        }
-
-        function closeAdminPanel() {
-            adminPanel.style.display = 'none';
-        }
-
-        function switchAdminTab(tabName) {
-            document.querySelectorAll('.admin-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.getElementById(tabName + 'Section').classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function loadAdminData() {
-            try {
-                const users = JSON.parse(localStorage.getItem('allUsers') || '{}');
-                const messages = JSON.parse(localStorage.getItem('allMessages') || '[]');
-                updateAdminUI(users, messages);
-            } catch (error) {
-                console.error("Error loading admin data:", error);
-            }
-        }
-
-        function updateAdminUI(users, messages) {
-            const userList = document.getElementById('userList');
-            userList.innerHTML = '';
-            
-            Object.keys(users).forEach(userId => {
-                const userData = users[userId];
-                const userItem = document.createElement('div');
-                userItem.className = 'user-item';
-                userItem.innerHTML = `
-                    <div>
-                        <strong>${userData.name}</strong><br>
-                        <small>IP: ${userData.ip} | Lang: ${userData.preferredLanguage || 'auto'}</small>
-                    </div>
-                    <div class="user-actions">
-                        ${userData.isLimited ? 
-                            `<button class="unlimit-btn" onclick="toggleUserLimit('${userId}', false)">Unlimit</button>` :
-                            `<button class="limit-btn" onclick="toggleUserLimit('${userId}', true)">Limit</button>`
-                        }
-                    </div>
-                `;
-                userItem.onclick = () => showUserChat(userId, userData.name);
-                userList.appendChild(userItem);
-            });
-            
-            document.getElementById('totalUsers').textContent = Object.keys(users).length;
-            document.getElementById('totalMessages').textContent = messages.length;
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const todayUsers = Object.keys(users).filter(userId => {
-                const userData = users[userId];
-                return userData.firstSeen && new Date(userData.firstSeen) >= today;
-            }).length;
-            
-            const todayMessages = messages.filter(msg => 
-                msg.timestamp && new Date(msg.timestamp) >= today
-            ).length;
-            
-            document.getElementById('todayUsers').textContent = todayUsers;
-            document.getElementById('todayMessages').textContent = todayMessages;
-        }
-
-        function toggleUserLimit(userId, limitStatus) {
-            try {
-                const users = JSON.parse(localStorage.getItem('allUsers') || '{}');
-                if (users[userId]) {
-                    users[userId].isLimited = limitStatus;
-                    localStorage.setItem('allUsers', JSON.stringify(users));
-                    
-                    if (userId === currentUser.id) {
-                        currentUser.isLimited = limitStatus;
-                        if (limitStatus) {
-                            showLimitMessage();
-                        }
-                    }
-                    
-                    loadAdminData();
-                    alert(`User ${limitStatus ? 'limited' : 'unlimited'} successfully!`);
-                }
-            } catch (error) {
-                console.error("Error toggling user limit:", error);
-                alert("Error updating user limit!");
-            }
-        }
-
-        function showUserChat(userId, userName) {
-            try {
-                document.getElementById('selectedUserName').textContent = userName;
-                document.getElementById('userChatSection').style.display = 'block';
-                
-                const allMessages = JSON.parse(localStorage.getItem('allMessages') || '[]');
-                const userMessages = allMessages.filter(msg => msg.userId === userId);
-                
-                userMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                
-                const userChat = document.getElementById('userChat');
-                userChat.innerHTML = '';
-                
-                userMessages.forEach(data => {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `message ${data.sender}-message`;
-                    
-                    const avatar = document.createElement('div');
-                    avatar.className = `avatar ${data.sender}-avatar`;
-                    avatar.textContent = data.sender === 'user' ? '👤' : '👑';
-                    
-                    const messageContent = document.createElement('div');
-                    messageContent.className = 'message-content';
-                    messageContent.innerHTML = formatMessage(data.message);
-                    
-                    messageDiv.appendChild(avatar);
-                    messageDiv.appendChild(messageContent);
-                    userChat.appendChild(messageDiv);
-                });
-                
-                userChat.scrollTop = userChat.scrollHeight;
-                
-            } catch (error) {
-                console.error("Error loading user chat:", error);
-            }
-        }
-
         // Keep input field focused but allow clicking elsewhere
         document.addEventListener('click', function(e) {
             if (e.target !== userInput && !e.target.closest('.input-container')) {
+                // Don't refocus if clicking outside the input area
                 return;
             }
             userInput.focus();
